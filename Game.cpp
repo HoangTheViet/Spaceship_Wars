@@ -71,8 +71,6 @@ void Game::home() {
 			 User.matrixForPlayer(2, "image/pick2.png", ren, start, background, running);
 			 type++;
 			 User.free();
-			 AI.print();
-			 User.print();
 		 }
 		 SDL_RenderPresent(ren);
 	 }

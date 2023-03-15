@@ -25,7 +25,7 @@ public:
 	void renderEx(SDL_Renderer* ren);// render sth which was rendered
 	void free();
 	bool pick(SDL_Renderer* ren, vector<int>& runner, vipText& green, int x, int y);
-	void print();
+	
 private:
 	int a[10][10] = { 0 };
 

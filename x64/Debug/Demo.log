@@ -1,7 +1,5 @@
-﻿  Play.cpp
-  Game.cpp
-  initWindow.cpp
+﻿  Game.cpp
+  Play.cpp
   mainOfGame.cpp
-  vipText.cpp
   Generating Code...
   Demo.vcxproj -> D:\Demo\x64\Debug\Demo.exe

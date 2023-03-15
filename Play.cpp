@@ -310,14 +310,5 @@ bool Play::pick(SDL_Renderer* ren, vector<int>& runner, vipText& green, int x, i
     return true;
 }
 
-void Play::print() {
-    for (int i = 0; i < save.size(); i++) {
-        for (int j = 0; j < save[i].size(); j++) {
-            cout << save[i][j] << " ";
-       }
-        cout << endl;
-    }
-    cout << endl;
-}
 
 	
