@@ -2,6 +2,7 @@
 
 using namespace std;
 
+
 void vipText::free() {
 	if (text != nullptr) {
 		SDL_DestroyTexture(text);

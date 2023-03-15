@@ -20,18 +20,19 @@ public:
 	
 	string checkUsers(vector<int>& v, int size);
 	void load(SDL_Renderer* ren);
-	bool matrixForPlayer(int size, string s, SDL_Renderer* ren, StartScreen& scr, vipText& background);
-	void maker(vipText& h, map<vipText, vector<int>>& m, vector<int>& runner, SDL_Renderer* ren);
-	void renderEx(SDL_Renderer* ren);
+	void matrixForPlayer(int size, string s, SDL_Renderer* ren, StartScreen& scr, vipText& background, bool& running);// choose ship
+	void maker(vipText& h, vector<int>& runner, StartScreen& scr, SDL_Renderer* ren, vipText& background);// mark and render new
+	void renderEx(SDL_Renderer* ren);// render sth which was rendered
 	void free();
-
+	bool pick(SDL_Renderer* ren, vector<int>& runner, vipText& green, int x, int y);
+	void print();
 private:
 	int a[10][10] = { 0 };
 
 	set<int> s;
-	vector<vector<int>> save;
-	vector < map<vipText, vector<int>> > position;
-	map<vipText, bool> test;
+	vector<vipText> toRender;// saving the exShip.
+	vector<vector<int>> save;// for saving position of both bot and player.
+	vector<vector<int>> posToRen;// for renderring.
 
 	vipText green;
 	vipText h4;

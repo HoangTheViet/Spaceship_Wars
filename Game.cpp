@@ -44,16 +44,35 @@ void Game::home() {
 		 }
 		 else if (type == 2) {
 			 AI.matrixForAI(4);
+			 User.load(ren);
 			 type++;
 		 }
 		 else if (type == 3) {
-			 User.load(ren);
-			 if (User.matrixForPlayer(4, "image/pick4.png", ren, start, background)) {
-				 type++;
-			 }
-			 else {
-				 break;
-			 }
+			 User.matrixForPlayer(4, "image/pick4.png", ren, start, background, running);
+			 type++;
+		 }
+		 else if (type == 4) {
+			 User.matrixForPlayer(4, "image/pick4.png", ren, start, background, running);
+			 type++;
+		 }
+		 else if (type == 5) {
+			 User.matrixForPlayer(3, "image/pick3.png", ren, start, background, running);
+			 type++;
+		 }
+		 else if (type == 6) {
+			 User.matrixForPlayer(3, "image/pick3.png", ren, start, background, running);
+			 type++;
+		 }
+		 else if (type == 7) {
+			 User.matrixForPlayer(2, "image/pick2.png", ren, start, background, running);
+			 type++;
+		 }
+		 else if (type == 8) {
+			 User.matrixForPlayer(2, "image/pick2.png", ren, start, background, running);
+			 type++;
+			 User.free();
+			 AI.print();
+			 User.print();
 		 }
 		 SDL_RenderPresent(ren);
 	 }

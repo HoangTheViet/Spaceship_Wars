@@ -19,9 +19,12 @@
 #include <random>
 #include <unordered_map>
 
+
+
 class vipText {
 
 public:
+	
 	vipText(){}
 
 	void free();
@@ -40,5 +43,9 @@ private:
 	int width = 0;
 	int height = 0;
 };
+/*
+bool operator < (vipText a, vipText b) {
+	return a.getWidth() < b.getHeight();
+} */
 
 #endif

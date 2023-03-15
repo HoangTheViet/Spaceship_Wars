@@ -134,52 +134,8 @@ int main(int argv, char* argc[]) {
         SDL_RenderCopy(ren, background, nullptr, nullptr);
         renderLine();
        
-        while (run) {
-            while (SDL_PollEvent(&k) != 0) {
-                if (k.type == SDL_MOUSEBUTTONDOWN) SDL_GetMouseState(&x, &y);
-            }
-            if (check == false) {
-                SDL_RenderCopy(ren, background, nullptr, nullptr);
-                renderLine();
-                check = true;
-            }
-            if ((x >= 40 && x <= 440) && (y >= 40 && y <= 440)) {
-                int lead = x / 40;
-                int trail = y / 40;
-                SDL_Rect area;
-                int w, h;
-                SDL_QueryTexture(green, nullptr, nullptr, &w, &h);
-                area = { lead * 40, trail * 40, w, h };
-                SDL_RenderCopy(ren, green, nullptr, &area);
-                int b = lead * 10 + trail;
-                int count = 0;
-                for (int i = 0; i < save.size(); i++) {
-                    if (save[i] == b) count++;
-                }
-                if (count == 0) save.push_back(b);
-            }
-            else {
-                check = false;
-            }
-            if (save.size() == 4) {
-                SDL_RenderCopy(ren, background, nullptr, nullptr);
-                renderLine();
-                sort(save.begin(), save.end());
-                int l = save[0] / 10;
-                int t = save[0] % 10;
-                SDL_Rect are;
-                are.x = l * 40;
-                are.y = t * 40;
-                int wi, he;
-                SDL_QueryTexture(spaceShip, nullptr, nullptr, &wi, &he);
-                are.w = wi;
-                are.h = he;
-                SDL_RenderCopy(ren, spaceShip, nullptr, &are);
-                save.clear();
-               
-            }
+       
             SDL_RenderPresent(ren);
-        }
     }
     return 0;
 }
@@ -233,4 +189,160 @@ while (run) {
         }
     }
     SDL_RenderPresent(ren);
+*/
+
+
+/*
+SDL_Event k;
+bool run = true;
+int dx = 0; int dy = 0;
+vector<int> runner;
+map<vipText, vector<int>> m;
+bool check = true;
+while (run) {
+    //event
+    while (SDL_PollEvent(&k) != 0) {
+        if (k.type == SDL_QUIT) run = false;
+        if (k.type == SDL_MOUSEBUTTONDOWN) {
+            SDL_GetMouseState(&dx, &dy);
+        }
+    }
+    // do
+    if ((dx >= 40 && dx <= 440) && (dy >= 40 && dy <= 440) && check == true) {
+        int l = dx / 40;
+        int t = dy / 40;
+        int count = 0;
+        for (int i = 0; i < runner.size(); i++) {
+            if (runner[i] == l * 10 + t) count++;
+        }
+        if (count == 0) {
+            if (a[l - 1][t - 1] == 0) {
+                runner.push_back(l * 10 + t);
+                green.render(ren, 0, 0, l * 40, t * 40, green.getWidth(), green.getHeight());
+                SDL_RenderPresent(ren);
+            }
+            else {
+                continue;
+            }
+        }
+    }
+    else if ((dy >= 540 && dy <= 590) && check == true) {
+        if (dx >= 370 && dx <= 450) {
+            scr.MatrixScreen(background, ren);
+            step.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
+            renderEx(ren);
+        }
+        else if (dx > 450 && dx <= 530) {
+            string str = checkUsers(runner, size);
+            if (str == "wrong") {
+                runner.clear();
+                check = false;
+                scr.MatrixScreen(background, ren);
+                renderEx(ren);
+                notice.render(ren, 0, 0, 295, 460, notice.getWidth(), notice.getHeight());
+            }
+            else if (str == "h4") {
+                maker(h4, m, runner, ren);
+                return true;
+            }
+            else if (str == "v4") {
+                maker(v4, m, runner, ren);
+                return true;
+            }
+            else if (str == "h3") {
+                maker(h3, m, runner, ren);
+                return true;
+            }
+            else if (str == "v3") {
+                maker(v3, m, runner, ren);
+                return true;
+            }
+            else if (str == "h2") {
+                maker(h2, m, runner, ren);
+                return true;
+            }
+            else if (str == "v2") {
+                maker(v2, m, runner, ren);
+                return true;
+            }
+        }// con thieu buoc mark ma tran
+    }
+    else if (dy >= 580 && dy <= 620 && check == false) {
+        if (dx >= 450 && dx <= 530) {
+            return false;
+        }
+        else if (dx >= 370 && dx <= 450) {
+            check = true;
+            scr.MatrixScreen(background, ren);
+            step.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
+            renderEx(ren);
+        }
+    }
+    SDL_RenderPresent(ren);
+
+}
+}
+
+string Play::checkUsers(vector<int>& v, int size) {
+    if (v.size() != size) return "wrong";
+
+    sort(v.begin(), v.end());
+    int countV = 0;
+    int countH = 0;
+
+    for (int i = 0; i < v.size() - 1; i++) {
+        if (v[i + 1] - v[i] == 10) countV++;
+        if (v[i + 1] - v[i] == 1) countH++;
+    }
+
+    if (size == 4) {
+        if (countV == v.size() - 1) {
+            return "v4";
+        }
+        else if (countH == v.size() - 1) {
+            return "h4";
+        }
+    }
+    else if (size == 3) {
+        if (countV == v.size() - 1) {
+            return "v3";
+        }
+        else if (countH == v.size() - 1) {
+            return "h3";
+        }
+    }
+    else if (size == 2) {
+        if (countV == v.size() - 1) {
+            return "v2";
+        }
+        else if (countH == v.size() - 1) {
+            return "h2";
+        }
+    }
+    return "wrong";
+}
+
+void Play::renderEx(SDL_Renderer* ren) {
+    for (int i = 0; i < position.size(); i++) {
+        for (auto x : position[i]) {
+            vipText tmp = x.first;
+            vector<int> vi = x.second;
+            tmp.render(ren, 0, 0, vi[0], vi[1], tmp.getWidth(), tmp.getHeight());
+            tmp.free();
+        }
+    }
+}
+
+void Play::maker(vipText& h, map<vipText, vector<int>>& m, vector<int>& runner, SDL_Renderer* ren) {
+    test[h] = true;
+    vector<int> r;
+    int l = runner[0] / 10;
+    int t = runner[0] % 10;
+
+    h.render(ren, 0, 0, l * 40, t * 40, h4.getHeight(), h4.getWidth());
+    r.push_back(l * 40);
+    r.push_back(t * 40);
+    m[h] = r;
+    position.push_back(m);
+}
 */
