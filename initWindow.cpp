@@ -35,10 +35,22 @@ void initIMGvsMixer() {
     {
         logSDLError(std::cout, "InitIMG", true);
     }
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 605000) < 0)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1000000) < 0)
     {
         logSDLError(std::cout, "InitMixer", true);
     }      
+}
+
+void initTTF(TTF_Font* &font, std::string s) {
+    if (TTF_Init() == -1) {
+        logSDLError(std::cout, "InitTTF", true);
+    }
+    else {
+        font = TTF_OpenFont(s.c_str(), 28);
+        if (font == nullptr) {
+            logSDLError(std::cout, "Cannot load the font ", true);
+        }
+    }
 }
 
 void StartScreen::WaitScreen(vipText& background, vipText& playButton, vipText& title, SDL_Renderer* ren) {
@@ -88,9 +100,11 @@ void StartScreen::MatrixScreen(vipText& background, SDL_Renderer* ren) {
     }
 }
 
-void quitSDL(SDL_Window* &window, SDL_Renderer* &ren) {
+void quitSDL(SDL_Window* &window, SDL_Renderer* &ren, TTF_Font* &font) {
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(window);
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_Quit();
     IMG_Quit();
     Mix_Quit();

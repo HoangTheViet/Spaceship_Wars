@@ -1,5 +1,7 @@
-﻿  Game.cpp
-  Play.cpp
-  mainOfGame.cpp
-  Generating Code...
+﻿  Play.cpp
+D:\Demo\Play.cpp(505,21): warning C4551: function call missing argument list
+D:\Demo\Play.cpp(551,21): warning C4551: function call missing argument list
+D:\Demo\Play.cpp(608,45): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Demo\Play.cpp(619,46): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Demo\Play.cpp(624,46): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Demo.vcxproj -> D:\Demo\x64\Debug\Demo.exe

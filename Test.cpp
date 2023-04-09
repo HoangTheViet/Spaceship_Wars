@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <SDL.h>
 #include <string>
 #include <vector>
@@ -49,8 +50,11 @@ void initSDL(SDL_Window*& window, SDL_Renderer*& renderer)
 
     SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 }
+void initTTF(TTF_Font*& font, std::string s) {
+    font = TTF_OpenFont(s.c_str(), 25);
+}
 
-void initIMGvsMixer() {
+void initIMG_Mixer_TTF() {
     int imgFlags = IMG_INIT_PNG;
     if (!(IMG_Init(imgFlags) & imgFlags))
     {
@@ -59,6 +63,9 @@ void initIMGvsMixer() {
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 605000) < 0)
     {
         logSDLError(std::cout, "InitMixer", true);
+    }
+    if (TTF_Init() == -1) {
+        logSDLError(std::cout, "InitTTF", true);
     }
 }
 
@@ -102,247 +109,86 @@ void renderLine() {
     }
 }
 
+void render(SDL_Texture* text, SDL_Renderer* ren, int x, int y, int posX, int posY, int w, int h) {
+    SDL_Rect area = { posX, posY, w, h };
+    SDL_Rect take = { x, y, w, h };
+    SDL_RenderCopy(ren, text, &take , &area);
+}
 
 int main(int argv, char* argc[]) {
     initSDL(window, ren);
-    initIMGvsMixer();
+    initIMG_Mixer_TTF();
 
-    SDL_Texture* green = IMG_LoadTexture(ren, "Green.png");
-    if (green == nullptr) cout << "cannot load" << SDL_GetError();
-    SDL_Texture* background = IMG_LoadTexture(ren, "background.png");
-    SDL_Texture* step = IMG_LoadTexture(ren, "pick4.png");
-    SDL_Texture* notice = IMG_LoadTexture(ren, "notice.png");
-    SDL_Texture* spaceShip = IMG_LoadTexture(ren, "SpaceShip4x.png");
+    SDL_Texture* background = IMG_LoadTexture(ren, "image/background.png");
+    SDL_Texture* boom = IMG_LoadTexture(ren, "image/Explo.png");
+    if (background == nullptr) {
+        cout << "Cannot load background" << SDL_GetError();
+    }
+    if (boom == nullptr) {
+        cout << "Cannot load boom" << SDL_GetError();
+    }
 
-
+    int w, h;
+    SDL_QueryTexture(boom, nullptr, nullptr, &w, &h);
+    int increase = h / 24;
+    int start = h - increase;
+    int x = 0;
+    int y = 0;
+    bool down = false;
     bool running = true;
     SDL_Event e;
-    int x = 0; int y = 0;
-    SDL_Event k;
-    bool run = true;
-    bool check = true;
-    vector<int> save;
-
     while (running) {
-
         while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDLK_ESCAPE) running = false;
+            if (e.type == SDL_QUIT) running = false;
             if (e.type == SDL_MOUSEBUTTONDOWN) {
                 SDL_GetMouseState(&x, &y);
+                down = true;
             }
         }
-        SDL_RenderCopy(ren, background, nullptr, nullptr);
-        renderLine();
-       
-       
-            SDL_RenderPresent(ren);
+        
+            while (down) {
+                SDL_RenderCopy(ren, background, nullptr, nullptr);
+                renderLine();
+                render(boom, ren, 0, start, x, y, w, increase);
+                SDL_RenderPresent(ren);
+                start -= increase;
+                SDL_Delay(60);
+                if (start < 0) {
+                    SDL_RenderCopy(ren, background, nullptr, nullptr);
+                    renderLine();
+                    SDL_RenderPresent(ren);
+                    down = false;
+                    start = h - increase;
+                }
+        }
     }
+    
     return 0;
 }
-/*
-while (run) {
-    // event
-    while (SDL_PollEvent(&k) != 0) {
-        if (k.type == SDL_QUIT) run = false;
-        if (k.type == SDL_MOUSEBUTTONDOWN) {
-            SDL_GetMouseState(&dx, &dy);
-        }
-    }
-    //do
-    if ((dx >= 40 && dx <= 440) && (dy >= 40 && dy <= 440)) {
-        int l = dx / 40;
-        int t = dy / 40;
-        int count = 0;
-        for (int i = 0; i < runner.size(); i++) {
-            if (runner[i] == l * 10 + t) count++;
-        }
-        if (count == 0) {
-            if (a[l - 1][t - 1] == 0) {
-                runner.push_back(l * 10 + t);
-                green.render(ren, 0, 0, l * 40, t * 40, green.getWidth(), green.getHeight());
+
+
+
+
+
+/* while (posY > 40) {
+           // while (count--) {
+             //   SDL_RenderCopy(ren, text, nullptr, nullptr);
+              //  renderLine();
+              //  render(rocket, ren, x, y, posX, posY, width, increase);
                 SDL_RenderPresent(ren);
+                posY -= 8;
+                SDL_Delay(30);
             }
-            else {
-                continue;
+            count = 10;
+            y -= increase;
+            if (y < 0) {
+                y = height - increase;
             }
-        }
-    }
-    else if (dy >= 540 && dy <= 590) {
-        if (dx >= 370 && dx <= 450) {
-            scr.MatrixScreen(background, ren);
-            step.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
-        }
-        else if (dx > 450 && dx <= 530) {
-            if (checkUsers(runner, size)) {
-                scr.MatrixScreen(background, ren);
-                int left = runner[0] / 10;
-                int right = runner[0] % 10;
-                spaceship4x.render(ren, 0, 0, left * 40, right * 40, spaceship4x.getWidth(), spaceship4x.getHeight());
-                //mark
-                run = false;
-            }
-            else {
-                scr.MatrixScreen(background, ren);
-                notice.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
-
-            }
-        }
-    }
-    SDL_RenderPresent(ren);
-*/
+            SDL_Delay(20);
+        }*/
 
 
-/*
-SDL_Event k;
-bool run = true;
-int dx = 0; int dy = 0;
-vector<int> runner;
-map<vipText, vector<int>> m;
-bool check = true;
-while (run) {
-    //event
-    while (SDL_PollEvent(&k) != 0) {
-        if (k.type == SDL_QUIT) run = false;
-        if (k.type == SDL_MOUSEBUTTONDOWN) {
-            SDL_GetMouseState(&dx, &dy);
-        }
-    }
-    // do
-    if ((dx >= 40 && dx <= 440) && (dy >= 40 && dy <= 440) && check == true) {
-        int l = dx / 40;
-        int t = dy / 40;
-        int count = 0;
-        for (int i = 0; i < runner.size(); i++) {
-            if (runner[i] == l * 10 + t) count++;
-        }
-        if (count == 0) {
-            if (a[l - 1][t - 1] == 0) {
-                runner.push_back(l * 10 + t);
-                green.render(ren, 0, 0, l * 40, t * 40, green.getWidth(), green.getHeight());
-                SDL_RenderPresent(ren);
-            }
-            else {
-                continue;
-            }
-        }
-    }
-    else if ((dy >= 540 && dy <= 590) && check == true) {
-        if (dx >= 370 && dx <= 450) {
-            scr.MatrixScreen(background, ren);
-            step.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
-            renderEx(ren);
-        }
-        else if (dx > 450 && dx <= 530) {
-            string str = checkUsers(runner, size);
-            if (str == "wrong") {
-                runner.clear();
-                check = false;
-                scr.MatrixScreen(background, ren);
-                renderEx(ren);
-                notice.render(ren, 0, 0, 295, 460, notice.getWidth(), notice.getHeight());
-            }
-            else if (str == "h4") {
-                maker(h4, m, runner, ren);
-                return true;
-            }
-            else if (str == "v4") {
-                maker(v4, m, runner, ren);
-                return true;
-            }
-            else if (str == "h3") {
-                maker(h3, m, runner, ren);
-                return true;
-            }
-            else if (str == "v3") {
-                maker(v3, m, runner, ren);
-                return true;
-            }
-            else if (str == "h2") {
-                maker(h2, m, runner, ren);
-                return true;
-            }
-            else if (str == "v2") {
-                maker(v2, m, runner, ren);
-                return true;
-            }
-        }// con thieu buoc mark ma tran
-    }
-    else if (dy >= 580 && dy <= 620 && check == false) {
-        if (dx >= 450 && dx <= 530) {
-            return false;
-        }
-        else if (dx >= 370 && dx <= 450) {
-            check = true;
-            scr.MatrixScreen(background, ren);
-            step.render(ren, 0, 0, 295, 460, step.getWidth(), step.getHeight());
-            renderEx(ren);
-        }
-    }
-    SDL_RenderPresent(ren);
 
-}
-}
 
-string Play::checkUsers(vector<int>& v, int size) {
-    if (v.size() != size) return "wrong";
 
-    sort(v.begin(), v.end());
-    int countV = 0;
-    int countH = 0;
 
-    for (int i = 0; i < v.size() - 1; i++) {
-        if (v[i + 1] - v[i] == 10) countV++;
-        if (v[i + 1] - v[i] == 1) countH++;
-    }
-
-    if (size == 4) {
-        if (countV == v.size() - 1) {
-            return "v4";
-        }
-        else if (countH == v.size() - 1) {
-            return "h4";
-        }
-    }
-    else if (size == 3) {
-        if (countV == v.size() - 1) {
-            return "v3";
-        }
-        else if (countH == v.size() - 1) {
-            return "h3";
-        }
-    }
-    else if (size == 2) {
-        if (countV == v.size() - 1) {
-            return "v2";
-        }
-        else if (countH == v.size() - 1) {
-            return "h2";
-        }
-    }
-    return "wrong";
-}
-
-void Play::renderEx(SDL_Renderer* ren) {
-    for (int i = 0; i < position.size(); i++) {
-        for (auto x : position[i]) {
-            vipText tmp = x.first;
-            vector<int> vi = x.second;
-            tmp.render(ren, 0, 0, vi[0], vi[1], tmp.getWidth(), tmp.getHeight());
-            tmp.free();
-        }
-    }
-}
-
-void Play::maker(vipText& h, map<vipText, vector<int>>& m, vector<int>& runner, SDL_Renderer* ren) {
-    test[h] = true;
-    vector<int> r;
-    int l = runner[0] / 10;
-    int t = runner[0] % 10;
-
-    h.render(ren, 0, 0, l * 40, t * 40, h4.getHeight(), h4.getWidth());
-    r.push_back(l * 40);
-    r.push_back(t * 40);
-    m[h] = r;
-    position.push_back(m);
-}
-*/

@@ -14,7 +14,7 @@ void Play::createMatrix(int size) {
 			pos = random(0, 99);
 			int lead = pos / 10;
 			int trail = pos % 10;
-			while (a[lead][trail] != 0) {
+			while (a1[lead][trail] != 0) {
 				pos = random(0, 99);
 				lead = pos / 10;
 				trail = pos % 10;
@@ -39,7 +39,7 @@ void Play::createMatrix(int size) {
 			// after check;
 			if (kt == false) {
 				s.clear();
-				a[lead][trail] = size;
+				a1[lead][trail] = size;
 				continue;
 			}
 			else {
@@ -51,7 +51,7 @@ void Play::createMatrix(int size) {
 		// fix cell
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
-				if (a[i][j] != 1 && a[i][j] != 0) a[i][j] = 0;
+				if (a1[i][j] != 1 && a1[i][j] != 0) a1[i][j] = 0;
 			}
 		}
 		s.clear();
@@ -63,14 +63,14 @@ bool Play::checkAI(int i, int j, int m, int size) {
 	if (m == 0 || m == 2) {
 		for (int k = 0; k < size; k++) {
 			int res = j + fact * m;
-			if (a[i][res] != 0 || res < 0 || res >= 10) return false;
+			if (a1[i][res] != 0 || res < 0 || res >= 10) return false;
 			fact++;
 		}
 	}
 	else {
 		for (int k = 0; k < size; k++) {
 			int res = i + fact * m;
-			if (a[res][j] != 0 || res < 0 || res >= 10) return false;
+			if (a1[res][j] != 0 || res < 0 || res >= 10) return false;
 			fact++;
 		}
 	}
@@ -79,23 +79,22 @@ bool Play::checkAI(int i, int j, int m, int size) {
 
 void Play::mark(int i, int j, int m, int size) {
 	vector<int> runner;
-	runner.push_back(i * 10 + j);
 	int fact = 1;
 	if (m == 0 || m == 2) {
 		for (int k = 0; k < size; k++) {
-			a[i][j + fact * m] = 1;
+			a1[i][j + fact * m] = 1;
 			runner.push_back(i * 10 + j + fact * m);
 			fact++;
 		}
 	}
 	else {
 		for (int k = 0; k < size; k++) {
-			a[i + fact * m][j] = 1;
+			a1[i + fact * m][j] = 1;
 			runner.push_back((i + fact * m) * 10 + j);
 			fact++;
 		}
 	}
-	save.push_back(runner);
+	saveAI.push_back(runner);
 }
 
 void Play::matrixForAI(int size) {
@@ -113,18 +112,22 @@ int Play::random(int minn, int maxx) {
 }
 
 void Play::free() {
-    h4.free();
-    v4.free();
-    h3.free();
-    v3.free();
-    h2.free();
-    v2.free();
+    if (h4.drawed() == false) h4.free();
+    if (v4.drawed() == false) v4.free();
+    if (h3.drawed() == false) h3.free();
+    if (v3.drawed() == false) v3.free();
+    if (h2.drawed() == false) h2.free();
+    if (v2.drawed() == false) v2.free();
     step.free();
     notice.free();
     green.free();
 }
 
-void Play::load(SDL_Renderer* ren) {
+void Play::load(SDL_Renderer* &ren, TTF_Font* &font) {
+    for (int i = 0; i < 100; i++) {
+        toShoot.push_back(i);
+    }
+
 	h4.loadFromFile(ren, "image/h4.png");
 	h4.checkLoad();
 
@@ -148,9 +151,52 @@ void Play::load(SDL_Renderer* ren) {
 
 	green.loadFromFile(ren, "image/Green.png");
 	green.checkLoad();
+    // in game
+
+    yours.loadTTF(ren, font, 250, 0, 0, "YOURS:");
+    enemy.loadTTF(ren, font, 250, 0, 0, "ENEMY:");
+
+    yours.checkLoad();
+    enemy.checkLoad();
+
+
+    //starting the game
+    TTF_Font* newfont = TTF_OpenFont("TtfAndMixer/Vdj.ttf", 80);
+    one.loadTTF(ren, newfont, 250, 250, 0, to_string(1));
+    two.loadTTF(ren, newfont, 250, 250, 0, to_string(2));
+    three.loadTTF(ren, newfont, 250, 250, 0, to_string(3));
+    START.loadTTF(ren, newfont, 250, 250, 0, "START!");
+    Pturn.loadTTF(ren, font, 250, 250, 0, "YOUR TURN");
+    Aturn.loadTTF(ren, font, 250, 250, 0, "BOT'S TURN");
+    TTF_CloseFont(newfont);
+
+    // playing
+    rocket.loadFromFile(ren, "image/KimJongUn3.png");
+    rocket.checkLoad();
+
+    boom.loadFromFile(ren, "image/Explo.png");
+    boom.checkLoad();
+
+    miss.loadFromFile(ren, "image/missEffect.png");
+    miss.checkLoad();
+
+    xred.loadFromFile(ren, "image/XRed.png");
+    xred.checkLoad();
+
+    red.loadFromFile(ren, "image/Red.png");
+    red.checkLoad();
+
+    hit = Mix_LoadWAV("TtfAndMixer/newSound.wav");
+    if (hit == nullptr) logSDLError(std::cout, "the sound effect of hit was not uploaded ", true);
+    
+    fly = Mix_LoadWAV("TtfAndMixer/launcher_out.wav");
+    if(fly == nullptr) logSDLError(std::cout, "the sound effect of fly was not uploaded ", true);
+
+    small = Mix_LoadWAV("TtfAndMixer/smallSound.wav");
+    if(small == nullptr) logSDLError(std::cout, "the sound effect of small sound was not uploaded ", true);
 }
 
-void Play::matrixForPlayer(int size, string s, SDL_Renderer* ren, StartScreen& scr, vipText& background, bool& running) {
+void Play::matrixForPlayer(int size, string s, SDL_Renderer* &ren, StartScreen& scr, vipText& background, bool& running) {
 
 	step.free();
 	step.loadFromFile(ren, s.c_str());
@@ -273,42 +319,348 @@ string Play::checkUsers(vector<int>& v, int size) {
     return "wrong";
 }
 
-void Play::renderEx(SDL_Renderer* ren) {
+void Play::renderEx(SDL_Renderer* &ren) {
     for (int i = 0; i < toRender.size(); i++) {
         toRender[i].render(ren, 0, 0, posToRen[i][0], posToRen[i][1], toRender[i].getWidth(), toRender[i].getHeight());
     }
 }
 
-void Play::maker(vipText& h, vector<int>& runner, StartScreen& scr, SDL_Renderer* ren, vipText& background) {
+void Play::maker(vipText& h, vector<int>& runner, StartScreen& scr, SDL_Renderer* &ren, vipText& background) {
     vector<int> r;
     for (int i = 0; i < runner.size(); i++) {
-        a[runner[i] / 10][runner[i] % 10] = 1;
+        a2[runner[i] / 10][runner[i] % 10] = 1;
     }
     int x = runner[0] % 10 + 1;
     int y = runner[0] / 10 + 1;
     scr.MatrixScreen(background, ren);
     renderEx(ren);
     h.render(ren, 0, 0, x * 40, y * 40, h.getWidth(), h.getHeight());
-    vipText tmp = h;
-    toRender.push_back(tmp);
+    toRender.push_back(h);
+    h.fixed();
     r.push_back(x * 40);
     r.push_back(y * 40);
     posToRen.push_back(r);
-    save.push_back(runner);
+    savePlayer.push_back(runner);
 }
 
-bool Play::pick(SDL_Renderer* ren, vector<int>& runner, vipText& green, int x, int y) {
+bool Play::pick(SDL_Renderer* &ren, vector<int>& runner, vipText& green, int x, int y) {
     int row = y / 40 - 1;
     int coll = x / 40 - 1;
     for (int i = 0; i < runner.size(); i++) {
         if (runner[i] == row * 10 + coll) return false;
     }
-    if (a[row][coll] != 0) return false;
+    if (a2[row][coll] != 0) return false;
     runner.push_back(row * 10 + coll);
     green.render(ren, 0, 0, (coll + 1) * 40, (row + 1) * 40, green.getWidth(), green.getHeight());
     SDL_RenderPresent(ren);
     return true;
 }
+
+// last step
+
+void Play::renderScore( SDL_Renderer* &ren, TTF_Font* &font, int& Y, int& E) {
+    scoreY.free();
+    scoreE.free();
+
+    scoreY.loadTTF(ren, font, 0, 255, 255, to_string(Y));
+    scoreE.loadTTF(ren, font, 0, 255, 255, to_string(E));
+
+    yours.render(ren, 0, 0, 160, 460, yours.getWidth(), yours.getHeight());
+    enemy.render(ren, 0, 0, 580, 460, enemy.getWidth(), enemy.getHeight());
+    scoreY.render(ren, 0, 0, 160 + yours.getWidth(), 460, scoreY.getWidth(), scoreY.getHeight());
+    scoreE.render(ren, 0, 0, 580 + enemy.getWidth(), 460, scoreE.getWidth(), scoreE.getHeight());
+  
+}
+
+void Play::begin(SDL_Renderer*& ren, StartScreen& scr, vipText& background) {
+
+    three.render(ren, 0, 0, 420, 500, three.getWidth(), three.getHeight());
+    SDL_RenderPresent(ren);
+    SDL_Delay(1000);
+    scr.MatrixScreen(background, ren);
+    renderEx(ren);
+
+    two.render(ren, 0, 0, 420, 500, two.getWidth(), two.getHeight());
+    SDL_RenderPresent(ren);
+    SDL_Delay(1000);
+    scr.MatrixScreen(background, ren);
+    renderEx(ren);
+
+    one.render(ren, 0, 0, 420, 500, one.getWidth(), one.getHeight());
+    SDL_RenderPresent(ren);
+    SDL_Delay(1000);
+    scr.MatrixScreen(background, ren);
+    renderEx(ren);
+
+    START.render(ren, 0, 0, 300, 500, START.getWidth(), START.getHeight());
+    SDL_RenderPresent(ren);
+    SDL_Delay(1000);
+    scr.MatrixScreen(background, ren);
+    renderEx(ren);
+
+    one.free();
+    two.free();
+    three.free();
+    START.free();
+}
+
+
+void Play::flyingRocket(SDL_Renderer* &ren, TTF_Font* &font, StartScreen& scr, vipText& background, int x, int y, int &Y, int &E, int &type) {
+    x -= rocket.getWidth() / 2;
+    int posY = 700;
+    int count = 8;
+    int increase = rocket.getHeight() / 10;
+    int w = rocket.getWidth();
+    int start = rocket.getHeight() - increase;
+
+    Mix_PlayChannel(2, fly, 0);
+    while (posY > y) {
+        while (count--) {
+            scr.MatrixScreen(background, ren);
+            renderEx(ren);
+            renderTurn(ren, font, scr, background, Y, E, type);
+            rocket.render(ren, 0, start, x, posY, w, increase);
+            SDL_RenderPresent(ren);
+            posY -= 10;
+            SDL_Delay(30);
+        }
+        count = 8;
+        start -= increase;
+        if (start < 0) start = rocket.getHeight() - increase;
+        SDL_Delay(20);
+    }
+}
+
+void Play::Miss(SDL_Renderer*& ren, TTF_Font*& font, StartScreen& scr, vipText& background, int x, int y, int& Y, int& E, int& type) {
+    int increase = miss.getHeight() / 8;
+    int start = miss.getHeight() - increase;
+    x -= miss.getWidth() / 2;
+    y -= increase;
+    Mix_PlayChannel(2, small, 0);
+    while (true) {
+        scr.MatrixScreen(background, ren);
+        renderEx(ren);
+        renderTurn(ren, font, scr, background, Y, E, type);
+        miss.render(ren, 0, start, x, y, miss.getWidth(), increase);
+        SDL_RenderPresent(ren);
+        start -= increase;
+        if (start < 0) {
+            scr.MatrixScreen(background, ren);
+            renderEx(ren);
+            renderTurn(ren, font, scr, background, Y, E, type);
+            SDL_RenderPresent(ren);
+            break;
+        }
+        SDL_Delay(60);
+    }
+}
+
+
+
+void Play::Boom(SDL_Renderer*& ren, TTF_Font*& font, StartScreen& scr, vipText& background, int x, int y, int& Y, int& E, int& type) {
+    int increase = boom.getHeight() / 24;
+    int start = boom.getHeight() - increase;
+    x -= boom.getWidth() / 2;
+    y -= increase;
+
+    Mix_PlayChannel(2, hit, 0);
+    while (true) {
+        scr.MatrixScreen(background, ren);
+        renderEx(ren);
+        renderTurn(ren, font, scr, background, Y, E, type);
+        boom.render(ren, 0, start, x, y, boom.getWidth(), increase);
+        SDL_RenderPresent(ren);
+        start -= increase;
+        if (start < 0) {
+            scr.MatrixScreen(background, ren);
+            renderEx(ren);
+            renderTurn(ren, font, scr, background, Y, E, type);
+            SDL_RenderPresent(ren);
+            break;
+        }
+        SDL_Delay(60);
+    }
+}
+
+void Play:: MissOrHit(SDL_Renderer* ren, StartScreen& scr, vipText& background, TTF_Font*& font, int x, int y, int& Y, int& E, int& type, bool& previous, bool& first, int& current) {
+    
+    if (type % 2 == 0) {
+        int res = ((x / 40) - 12) * 10 + (y / 40);
+        bool hit = false;
+        for (int i = 0; i < saveAI.size(); i++) {
+            for (int j = 0; j < saveAI[i].size(); j++) {
+                if (saveAI[i][j] == res) {
+                    saveAI[i].erase(saveAI[i].begin() + j);
+                    hit = true;
+                    Boom(ren, font, scr, background, x, y, Y, E, type);
+                    scr.MatrixScreen(background, ren);
+                    renderEx(ren);
+                    renderTurn(ren, font, scr, background, Y, E, type);
+                    xred.render(ren, 0, 0, x - 20, y - 20, xred.getWidth(), xred.getHeight());
+                    toRender.push_back(xred);
+                    vector<int> pos;
+                    pos.push_back(x - 20);
+                    pos.push_back(y - 20);
+                    posToRen.push_back(pos);
+                    SDL_RenderPresent;
+                    break;
+                }
+            }
+        }
+        if (hit == false) {
+            Miss(ren, font, scr, background, x, y, Y, E, type);
+            red.render(ren, 0, 0, x - 20, y - 20, red.getWidth(), red.getHeight());
+            toRender.push_back(red);
+            vector<int> pos;
+            pos.push_back(x - 20);
+            pos.push_back(y - 20);
+            posToRen.push_back(pos);
+        }
+        for (int i = 0; i < saveAI.size(); i++) {
+            if (saveAI[i].size() == 0) {
+                saveAI.erase(saveAI.begin() + i);
+                E--;
+                scr.MatrixScreen(background, ren);
+                renderEx(ren);
+                renderTurn(ren, font, scr, background, Y, E, type);
+                break;
+            }
+        }
+    }
+    else {
+        int res = ((y - 20) / 40 - 1) * 10 + ((x - 20) / 40 - 1);
+        bool hit = false;
+        for (int i = 0; i < savePlayer.size(); i++) {
+            for (int j = 0; j < savePlayer[i].size(); j++) {
+                if (savePlayer[i][j] == res) {
+                    previous = true;
+                    first = true;
+                    hitman.push({ x, y });
+                    savePlayer[i].erase(savePlayer[i].begin() + j);
+                    hit = true;
+                    Boom(ren, font, scr, background, x, y, Y, E, type);
+                    scr.MatrixScreen(background, ren);
+                    renderEx(ren);
+                    renderTurn(ren, font, scr, background, Y, E, type);
+                    xred.render(ren, 0, 0, x - 20, y - 20, xred.getWidth(), xred.getHeight());
+                    toRender.push_back(xred);
+                    vector<int> pos;
+                    pos.push_back(x - 20);
+                    pos.push_back(y - 20);
+                    posToRen.push_back(pos);
+                    SDL_RenderPresent;
+                    break;
+                }
+            }
+        }
+        if (hit == false) {
+            first = false;
+            Miss(ren, font, scr, background, x, y, Y, E, type);
+            red.render(ren, 0, 0, x - 20, y - 20, red.getWidth(), red.getHeight());
+            toRender.push_back(red);
+            vector<int> pos;
+            pos.push_back(x - 20);
+            pos.push_back(y - 20);
+            posToRen.push_back(pos);
+        }
+        for (int i = 0; i < savePlayer.size(); i++) {
+            if (savePlayer[i].size() == 0) {
+                savePlayer.erase(savePlayer.begin() + i);
+                Y--;
+                scr.MatrixScreen(background, ren);
+                renderEx(ren);
+                renderTurn(ren, font, scr, background, Y, E, type);
+                break;
+            }
+        }
+        if (current > Y) {
+            current = Y;
+            previous = false;
+            first = false;
+            while (!hitman.empty()) hitman.pop();
+            move = { 0, 1, 2, 3 };
+        }
+    }
+}
+
+void Play::renderTurn(SDL_Renderer*& ren, TTF_Font*& font, StartScreen& scr, vipText& background, int& Y, int& E, int &type) {
+    if (type % 2 == 0) {
+        scr.MatrixScreen(background, ren);
+        renderEx(ren);
+        renderScore(ren, font, Y, E);
+        Pturn.render(ren, 0, 0, 350, 500, Pturn.getWidth(), Pturn.getHeight());
+        SDL_RenderPresent(ren);
+    }
+    else {
+        scr.MatrixScreen(background, ren);
+        renderEx(ren);
+        renderScore(ren, font, Y, E);
+        Aturn.render(ren, 0, 0, 350, 500, Aturn.getWidth(), Aturn.getHeight());
+        SDL_RenderPresent(ren);
+    }
+}
+
+vector<int> Play::shoot(bool& previous, bool& first) {
+    if (previous == false) {
+        int k = random(0, toShoot.size() - 1);
+        int resu = toShoot[k];
+        toShoot.erase(toShoot.begin() + k);
+        int x = ((resu % 10) + 1) * 40 + 20;
+        int y = ((resu / 10) + 1) * 40 + 20;
+        a2[resu / 10][resu % 10] = 2;
+        return { x, y };
+    }
+    else {// res[0] = x, res[1] = y; x= coll, y = row
+        if (first == false) {
+            
+            while (hitman.size() != 1) hitman.pop();
+            vector<int> res = hitman.top();
+            int p = random(0, move.size() - 1);
+            while (true) {
+                int row = (res[1] + r[p] * 40) / 40 - 1;
+                int coll = (res[0] + c[p] * 40) / 40 - 1;
+                if (legal(res[0] + c[p] * 40, res[1] + r[p] * 40) && a2[row][coll] == 0) break;
+                p = random(0, move.size() - 1);
+            }
+            movement = move[p];
+            move.erase(move.begin() + p);
+            int lookFor = ((res[1] + r[movement] * 40) / 40 - 1) * 10 + ((res[0] + c[movement] * 40) / 40 - 1);
+            for (int i = 0; i < toShoot.size(); i++) {
+                if (toShoot[i] == lookFor) {
+                    toShoot.erase(toShoot.begin() + i);
+                    break;
+                }
+            }
+            a2[lookFor / 10][lookFor % 10] = 2;
+            return { res[0] + c[p] * 40, res[1] + r[p] * 40 };
+        }
+        else {
+            vector<int> res = hitman.top();
+            int lookFor = ((res[1] + r[movement] * 40) / 40 - 1) * 10 + ((res[0] + c[movement] * 40) / 40 - 1);
+            if (!legal(res[0] + c[movement] * 40, res[1] + r[movement] * 40) || a2[lookFor / 10][lookFor % 10] != 0) {
+                first = false;
+                while (hitman.size() != 1) hitman.pop();
+                return shoot(previous, first);
+            }
+            for (int i = 0; i < toShoot.size(); i++) {
+                if (toShoot[i] == lookFor) {
+                    toShoot.erase(toShoot.begin() + i);
+                    break;
+                }
+            }
+            a2[lookFor / 10][lookFor % 10] = 2;
+            return { res[0] + c[movement] * 40, res[1] + r[movement] * 40 };
+        }
+    }
+}
+
+
+
+bool Play::legal(int x, int y) {
+    return (x > 40 && x < 440 && y > 40 && y < 440);
+}
+
+
 
 
 	

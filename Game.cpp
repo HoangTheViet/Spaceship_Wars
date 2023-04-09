@@ -5,14 +5,18 @@
 void Game::home() {
 	initSDL(window, ren);
 	initIMGvsMixer();
+	initTTF(font, "TtfAndMixer/Vdj.ttf");
 	Enemy = 6;
 	Player = 6;
 	type = 0;
+	current = 6;
+	previous = false;
+	first = false;
 }
 
 
  void Game::gameLoop() {
-
+	 bool down = false;
 	 bool running = true;
 	 int x = 0;
 	 int y = 0;
@@ -26,6 +30,7 @@ void Game::home() {
 			 if (e.type == SDL_MOUSEBUTTONDOWN) {
 				 x = e.button.x;
 				 y = e.button.y;
+				 if (type > 9 && x > 460 && x < 860 && y > 40 && y < 440) down = true;
 			 }
 		 }
 
@@ -43,8 +48,8 @@ void Game::home() {
 			 type++;
 		 }
 		 else if (type == 2) {
-			 AI.matrixForAI(4);
-			 User.load(ren);
+			 User.matrixForAI(4);
+			 User.load(ren, font);
 			 type++;
 		 }
 		 else if (type == 3) {
@@ -69,8 +74,38 @@ void Game::home() {
 		 }
 		 else if (type == 8) {
 			 User.matrixForPlayer(2, "image/pick2.png", ren, start, background, running);
-			 type++;
 			 User.free();
+			 type++;
+		 }
+		 else if (type == 9) {
+			 User.begin(ren, start, background);
+			 User.renderScore(ren, font, Player, Enemy);
+			 type++;
+		 }
+		 else if (type % 2 == 0) {
+			 User.renderTurn(ren, font, start, background, Player, Enemy, type);
+			 if (down) {
+				 y = (int)(y / 40) * 40 + 20;
+				 for (int i = 0; i < xAxis.size() - 1; i++) {
+					 if (x >= xAxis[i] && x <= xAxis[i + 1]) {
+						 x = xAxis[i] + 20;
+						 break;
+					 }
+				 }
+				  User.flyingRocket(ren, font, start, background, x, y, Player, Enemy, type);
+				  User.MissOrHit(ren, start, background, font, x, y, Player, Enemy, type, previous, first, current);
+				  down = false;
+				  type++;
+			 }
+			 SDL_Delay(500);
+		 }
+		 else if (type % 2 != 0) {
+			 User.renderTurn(ren, font, start, background, Player, Enemy, type);
+			 vector<int> res = User.shoot(previous, first);
+			 User.flyingRocket(ren, font, start, background, res[0], res[1], Player, Enemy, type);
+			 User.MissOrHit(ren, start, background, font, res[0], res[1], Player, Enemy, type, previous, first, current);
+			 SDL_Delay(500);
+			 type++;
 		 }
 		 SDL_RenderPresent(ren);
 	 }
@@ -83,5 +118,5 @@ void Game::home() {
 }
 
  void Game:: quit() {
-	 quitSDL(window, ren);
+	 quitSDL(window, ren, font);
  }

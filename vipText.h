@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <SDL.h>
 #include <string>
 #include <vector>
@@ -38,14 +39,17 @@ public:
 	void render(SDL_Renderer* ren, int x, int y, int posX, int posY, int w, int h);
 	void checkLoad();
 
+	void fixed();
+	bool drawed();
+
+	void loadTTF(SDL_Renderer* ren, TTF_Font* font, int r, int g, int b,std:: string s);
+
 private:
 	SDL_Texture* text = nullptr;
+	bool draw = false;
 	int width = 0;
 	int height = 0;
 };
-/*
-bool operator < (vipText a, vipText b) {
-	return a.getWidth() < b.getHeight();
-} */
+
 
 #endif

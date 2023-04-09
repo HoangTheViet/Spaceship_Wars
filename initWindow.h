@@ -13,7 +13,9 @@ void initSDL(SDL_Window*& window, SDL_Renderer*& renderer);
 
 void initIMGvsMixer();
 
-void quitSDL(SDL_Window* &window, SDL_Renderer* &renderer);
+void initTTF(TTF_Font*& font, std::string s);
+
+void quitSDL(SDL_Window* &window, SDL_Renderer* &renderer, TTF_Font* &font);
 
 class StartScreen {
 public:

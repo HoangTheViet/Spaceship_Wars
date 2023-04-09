@@ -1,0 +1,3 @@
+SPACESHIPS WARS
++ Mô tả: Game được dựa trên tựa game huyền thoại battleships wars nay được chuyển thể thành cuộc chiến trong vũ trụ
++ Cách chơi: người chơi sẽ thi đấu với đối thủ(bot), được cấp 1 bảng 10x10 và 6 con thuyền: thuyền dài 4 ô, dài 3 ô và dài 2 ô, 2 thuyền mỗi loại. Người chơi sẽ thực hiện giấu tàu của mình bằng thao tác click chuột(chọn 4 hoặc 3 hoặc 2 ô liền nhau để xếp tàu), sau đó đến bot xếp tàu. Bước tiếp theo là chơi, người chơi sẽ chọn các ô trên bảng 10x10 của đối thủ để định vị tên lửa bắn hạ, trò chơi sẽ kết thúc nếu toàn bộ tàu của 1 trong 2 người tham gia bị hạ trước.

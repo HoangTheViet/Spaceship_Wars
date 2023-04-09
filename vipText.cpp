@@ -40,3 +40,20 @@ void vipText::checkLoad() {
 	}
 }
 
+void vipText::loadTTF(SDL_Renderer* ren, TTF_Font* font, int r, int g, int b, std:: string s) {
+	SDL_Color col = { r, g, b };
+	SDL_Surface* sur = TTF_RenderText_Solid(font, s.c_str(), col);
+	text = SDL_CreateTextureFromSurface(ren, sur);
+	SDL_QueryTexture(text, nullptr, nullptr, &width, &height);
+	SDL_FreeSurface(sur);
+	sur = nullptr;
+}
+
+void vipText::fixed() {
+	draw = true;
+}
+
+bool vipText::drawed() {
+	if (draw == true) return true;
+	return false;
+}
